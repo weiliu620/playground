@@ -1,0 +1,45 @@
+How did you verify that you are parsing the contours correctly?
+
+For imaging data, first thing is visually checking, so I wrote a
+    parsing.viz function for that.
+
+Also need to (not implemented):
+
+- make sure the (x, y) coordinate in correct range (greater than 0 and
+  less than row and column number)
+
+- make sure the slice ID in contour directory in correct range.
+
+=========================
+What changes did you make to the code, if any, in order to integrate
+it into our production code base?
+
+>>> None
+
+Did you change anything from the pipelines built in Parts 1 to better
+streamline the pipeline built in Part 2? If so, what? If not, is there
+anything that you can imagine changing in the future?
+
+>> None
+
+How do you/did you verify that the pipeline was working correctly?
+
+>>> Output image and label samples have correct shape. Also visualize
+    them to make sure each time the different samples are chosen.
+
+
+====================
+Given the pipeline you have built, can you see any deficiencies that
+you would change if you had more time? If not, can you think of any
+improvements/enhancements to the pipeline that you could build in?
+
+>>> Dynamically change h5 dataset size may not be optimal for
+    diskIO. May allocate a big chunk at a time.
+
+>>> Also, augmentation should be part of dataset
+class. I.e. dataset.next_batch(augment = True).
+
+>>> And when augmentation take more time (especially for 3D), need to
+use queue, so GPU would not starve because of augmentation.
+
+
