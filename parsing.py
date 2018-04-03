@@ -6,6 +6,9 @@ from dicom.errors import InvalidDicomError
 import numpy as np
 from PIL import Image, ImageDraw
 
+import os
+import matplotlib.pyplot as plt
+
 
 def parse_contour_file(filename):
     """Parse the given contour filename
@@ -70,3 +73,54 @@ def poly_to_mask(polygon, width, height):
     ImageDraw.Draw(img).polygon(xy=polygon, outline=0, fill=1)
     mask = np.array(img).astype(bool)
     return mask
+
+
+def viz(dcm_dir, ct_dir, R = 4, C = 4):
+    """ 
+    visualize contour overlayed  on Dicom image for single subject.
+    
+    """
+
+    all_im = []
+
+    n = 0
+
+
+    for fname in sorted(os.listdir(ct_dir)):
+        
+        if fname.endswith('.txt') and not fname.startswith('.'):
+            coords_list = parse_contour_file(os.path.join(ct_dir, fname) )
+            
+            slice_idx = fname[8:12].strip('0')
+            
+            dcm_file = os.path.join(dcm_dir, slice_idx + '.dcm')
+            
+            dcm_im = parse_dicom_file(dcm_file)['pixel_data']
+
+            mask_im = poly_to_mask(coords_list, dcm_im.shape[0], dcm_im.shape[1])
+
+            all_im.append( (dcm_im, mask_im, slice_idx) )
+
+            print("Done with {} and {}".format(fname, dcm_file))
+            n += 1
+            if n == R*C:
+                break
+            
+
+            
+    fig, ax = plt.subplots(R, C)
+    # cmap = plt.cm.get_cmap("autumn")
+    # cmap.set_under(alpha = 0)  
+    for r in range(R):
+        for c in range(C):
+            n = r * C + c
+            if n <= len(all_im):
+                ax[r, c].imshow(all_im[n][0], cmap = 'gray')
+                ax[r, c].imshow(all_im[n][1], alpha = 0.1, cmap = 'autumn')
+                ax[r, c].set_title("{}".format(all_im[n][2]))
+                ax[r, c].axis('off')
+
+    plt.show(block = False)
+
+            
+
